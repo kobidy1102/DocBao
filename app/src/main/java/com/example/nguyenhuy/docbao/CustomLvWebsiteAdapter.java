@@ -16,8 +16,8 @@ import java.util.List;
  * Created by nguyenhuy on 14/11/2017.
  */
 
-public class CustomAdapter_MenuWeb extends ArrayAdapter<MenuWeb>{
-    public CustomAdapter_MenuWeb(Context context, int resourse, List<MenuWeb> items) {
+public class CustomLvWebsiteAdapter extends ArrayAdapter<WebSiteObject>{
+    public CustomLvWebsiteAdapter(Context context, int resourse, List<WebSiteObject> items) {
         super(context, resourse, items);
 
     }
@@ -28,17 +28,17 @@ public class CustomAdapter_MenuWeb extends ArrayAdapter<MenuWeb>{
         if (v == null) {
             LayoutInflater vi;
             vi=LayoutInflater.from(getContext());
-            v= vi.inflate(R.layout.custom_layout_lv_menuweb,null);
+            v= vi.inflate(R.layout.custom__lv_website,null);
         }
 
         // Get item
-        MenuWeb menuWeb = getItem(position);
-        if (menuWeb!=null) {
+        WebSiteObject webSiteObject = getItem(position);
+        if (webSiteObject!=null) {
             TextView tenMenu = (TextView) v.findViewById(R.id.tv_tenMenu);
-            tenMenu.setText(menuWeb.tenMenu);
+            tenMenu.setText(webSiteObject.tenMenu);
 
             ImageView iconMenu = (ImageView) v.findViewById(R.id.img_iconMenu);
-            Picasso.with(getContext()).load(menuWeb.image).into(iconMenu);
+            Picasso.with(getContext()).load(webSiteObject.image).into(iconMenu);
 
 
         }

@@ -1,6 +1,5 @@
 package com.example.nguyenhuy.docbao;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -8,13 +7,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -29,21 +24,14 @@ import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     ListView lvArticle;
     CustomLvArticleAdapter adapter;
     ArrayList<ArticleObject> arrDocBao;
-    ArrayList<TinDaDoc> arrTinDaDoc;
+    ArrayList<ArticleWasReadObject> arrTinDaDoc;
 
     static String linkWeb = "http://vietnamnet.vn/rss/home.rss";
     static String titleWeb = "VietNamNet.vn";
@@ -55,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
     boolean isLongClick = false;
 
 
-    MenuWeb menuWeb;
-    ArrayList<MenuWeb> arrMenuWeb = new ArrayList<MenuWeb>();
+    WebSiteObject menuWeb;
+    ArrayList<WebSiteObject> arrMenuWeb = new ArrayList<WebSiteObject>();
     DrawerLayout drawerLayout;
     ActionBarDrawerToggle actionBarDrawerToggle;
 
@@ -73,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout = (DrawerLayout) findViewById(R.id.menuWeb);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close);
         arrDocBao = new ArrayList<ArticleObject>();
-        arrTinDaDoc = new ArrayList<TinDaDoc>();
+        arrTinDaDoc = new ArrayList<ArticleWasReadObject>();
         mn_ = (MenuItem) findViewById(R.id.mn_);
 
 
@@ -114,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             alertDialog.setPositiveButton("Có", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    Intent intent = new Intent(MainActivity.this, Main3Activity.class);
+                    Intent intent = new Intent(MainActivity.this, ArticleWasReadActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putParcelableArrayList("arr", arrTinDaDoc);
                     intent.putExtras(bundle);
@@ -142,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             int id = dataContacts.getInt(0);
             String title = dataContacts.getString(1); //cot 1
             String link = dataContacts.getString(2);
-            TinDaDoc tinDaDoc = new TinDaDoc(id, title, link);
+            ArticleWasReadObject tinDaDoc = new ArticleWasReadObject(id, title, link);
             arrTinDaDoc.add(tinDaDoc);
         }
         if (arrTinDaDoc.size() >= 11) {
@@ -210,12 +198,12 @@ public class MainActivity extends AppCompatActivity {
 
         //lv adapter
         for (int i = 0; i < tenWeb.length; i++) {
-            menuWeb = new MenuWeb(iconWeb[i], tenWeb[i]);
+            menuWeb = new WebSiteObject(iconWeb[i], tenWeb[i]);
             arrMenuWeb.add(menuWeb);
         }
 
         lv_menuWeb = (ListView) findViewById(R.id.lv_menuWeb);
-        final CustomAdapter_MenuWeb customAdapter_menuWeb = new CustomAdapter_MenuWeb(MainActivity.this, R.layout.custom_layout_lv_menuweb, arrMenuWeb);
+        final CustomLvWebsiteAdapter customAdapter_menuWeb = new CustomLvWebsiteAdapter(MainActivity.this, R.layout.custom__lv_website, arrMenuWeb);
         lv_menuWeb.setAdapter(customAdapter_menuWeb);
 
 

@@ -31,7 +31,7 @@ public class CustomLvArticleAdapter extends ArrayAdapter<ArticleObject> {
         if (v == null) {
             LayoutInflater vi;
             vi=LayoutInflater.from(getContext());
-            v= vi.inflate(R.layout.dong_lv,null);
+            v= vi.inflate(R.layout.custom_lv_article,null);
         }
 
         try {

@@ -1,22 +1,16 @@
 package com.example.nguyenhuy.docbao;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -42,7 +36,7 @@ public class DetailsArticleActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_details_article);
         webView=(WebView) findViewById(R.id.wv);
        // btn_share= (Button) findViewById(R.id.btn_share);
         shareDialog= new ShareDialog(DetailsArticleActivity.this);

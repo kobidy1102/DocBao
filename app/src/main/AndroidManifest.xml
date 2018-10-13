@@ -40,13 +40,12 @@
             android:exported="true" />
 
         <activity
-            android:name=".Main3Activity"
+            android:name=".ArticleWasReadActivity"
             android:label="        Các tin đã đọc gần đây" />
         <activity
-            android:name=".Main4Activity"
+            android:name=".DetailsArticleOfflineActivity"
             android:label="Nội Dung Chi Tiết"
-            android:parentActivityName=".Main3Activity" />
-        <activity android:name=".Main5Activity"></activity>
+            android:parentActivityName=".ArticleWasReadActivity" />
     </application>
 
 </manifest>

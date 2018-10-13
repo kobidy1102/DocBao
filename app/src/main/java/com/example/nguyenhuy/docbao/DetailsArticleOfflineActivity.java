@@ -7,12 +7,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-public class Main4Activity extends AppCompatActivity {
+public class DetailsArticleOfflineActivity extends AppCompatActivity {
     WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main4);
+        setContentView(R.layout.activity_details_article_was_read);
         webView=(WebView) findViewById(R.id.wv_docOffline);
 
         webView.getSettings().setJavaScriptEnabled( true );

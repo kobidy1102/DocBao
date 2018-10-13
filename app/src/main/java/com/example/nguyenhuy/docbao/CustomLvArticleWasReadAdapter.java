@@ -14,8 +14,8 @@ import java.util.List;
  * Created by nguyenhuy on 17/11/2017.
  */
 
-public class CustomAdapter_lv_tinDaDoc extends ArrayAdapter<TinDaDoc> {
-    public CustomAdapter_lv_tinDaDoc(Context context, int resourse, List<TinDaDoc> items) {
+public class CustomLvArticleWasReadAdapter extends ArrayAdapter<ArticleWasReadObject> {
+    public CustomLvArticleWasReadAdapter(Context context, int resourse, List<ArticleWasReadObject> items) {
         super(context, resourse, items);
 
     }
@@ -25,14 +25,14 @@ public class CustomAdapter_lv_tinDaDoc extends ArrayAdapter<TinDaDoc> {
         if (v == null) {
             LayoutInflater vi;
             vi=LayoutInflater.from(getContext());
-            v= vi.inflate(R.layout.custom_layout_lv_tindadoc,null);
+            v= vi.inflate(R.layout.custom__lv_article_was_read,null);
         }
 
         // Get item
-        TinDaDoc tinDaDoc = getItem(position);
-        if (tinDaDoc!=null){
+        ArticleWasReadObject articleWasRead = getItem(position);
+        if (articleWasRead!=null){
             TextView title = (TextView) v.findViewById(R.id.text);
-            title.setText(tinDaDoc.title);
+            title.setText(articleWasRead.title);
             //TextView tvPosition = (TextView) v.findViewById(R.id.item_employee_tv_position);
             //tvPosition.setText("Staff");
             ImageView imgManager = (ImageView) v.findViewById(R.id.img);
