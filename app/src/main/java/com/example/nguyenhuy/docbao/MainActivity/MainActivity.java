@@ -1,4 +1,4 @@
-package com.example.nguyenhuy.docbao;
+package com.example.nguyenhuy.docbao.MainActivity;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -22,6 +22,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.nguyenhuy.docbao.ReadArticleActivity.ReadArticleActivity;
+import com.example.nguyenhuy.docbao.DatabaseHandler;
+import com.example.nguyenhuy.docbao.DetailsArticleActivity.DetailsArticleActivity;
+import com.example.nguyenhuy.docbao.R;
+
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 
@@ -30,27 +35,25 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     ListView lvArticle;
     CustomLvArticleAdapter adapter;
-    ArrayList<ArticleObject> arrDocBao;
-    ArrayList<ArticleWasReadObject> arrTinDaDoc;
+    ArrayList<ArticleObject> arrArticle;
 
     static String linkWeb = "http://vietnamnet.vn/rss/home.rss";
     static String titleWeb = "VietNamNet.vn";
     boolean isLoading = true;
     static int idWebSite = 0;
-    MenuItem mn_;
-    DatabaseHandler databaseHandler;
-    static DatabaseHandler databaseHandlerLuuTin;
-    boolean isLongClick = false;
+    MenuItem itemMenu_type_article;
+    public static DatabaseHandler databaseArticleWasRead;
+    public static DatabaseHandler databaseSavedArticle;
 
 
-    WebSiteObject menuWeb;
+    WebSiteObject website;
     ArrayList<WebSiteObject> arrMenuWeb = new ArrayList<WebSiteObject>();
     DrawerLayout drawerLayout;
     ActionBarDrawerToggle actionBarDrawerToggle;
 
     String tenWeb[] = {"VietNamNet.vn", "VnExpress.net", "DânTrí.com.vn", "24h.com.vn", "DânViệt.vn", "Tin Đã Lưu"};
     int[] iconWeb = {R.drawable.ic_vnnet, R.drawable.ic_exx, R.drawable.ic_dantri, R.drawable.ic_24h, R.drawable.ic_danviet, R.mipmap.star};
-    ListView lv_menuWeb;
+    ListView lvWebsite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,154 +63,43 @@ public class MainActivity extends AppCompatActivity {
         lvArticle = (ListView) findViewById(R.id.lv);
         drawerLayout = (DrawerLayout) findViewById(R.id.menuWeb);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close);
-        arrDocBao = new ArrayList<ArticleObject>();
-        arrTinDaDoc = new ArrayList<ArticleWasReadObject>();
-        mn_ = (MenuItem) findViewById(R.id.mn_);
+        arrArticle = new ArrayList<ArticleObject>();
+        itemMenu_type_article = (MenuItem) findViewById(R.id.mn_);
 
+        adapter = new CustomLvArticleAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arrArticle);
+        lvArticle.setAdapter(adapter);
+
+        for (int i = 0; i < tenWeb.length; i++) {
+            website = new WebSiteObject(iconWeb[i], tenWeb[i]);
+            arrMenuWeb.add(website);
+        }
+        lvWebsite = (ListView) findViewById(R.id.lv_menuWeb);
+        final CustomLvWebsiteAdapter customAdapter_menuWeb = new CustomLvWebsiteAdapter(MainActivity.this, R.layout.custom__lv_website, arrMenuWeb);
+        lvWebsite.setAdapter(customAdapter_menuWeb);
 
         //tạo database 
-        databaseHandler = new DatabaseHandler(this, "TinDaDoc.sqlite", null, 1);
-        databaseHandler.QueryData("CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT, title NVARCHAR(100),link VARCHAR(100))");
+        databaseArticleWasRead = new DatabaseHandler(this, "TinDaDoc.sqlite", null, 1);
+        databaseArticleWasRead.QueryData("CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT, title NVARCHAR(100),link VARCHAR(100))");
 
-        databaseHandlerLuuTin = new DatabaseHandler(this, "TinDaLuu.sqlite", null, 1);
-        databaseHandlerLuuTin.QueryData("CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT, img NVARCHAR(100),title NVARCHAR(100),link VARCHAR(100),date NVARCHAR(20))");
+        databaseSavedArticle = new DatabaseHandler(this, "TinDaLuu.sqlite", null, 1);
+        databaseSavedArticle.QueryData("CREATE TABLE IF NOT EXISTS contacts(id INTEGER PRIMARY KEY AUTOINCREMENT, img NVARCHAR(100),title NVARCHAR(100),link VARCHAR(100),date NVARCHAR(20))");
 
-
+        // kiểm tra mạng
         if (isNetworkAvailable() == true) {
+            // Tin đã lưu
             if (idWebSite == 5) {
-                arrDocBao.clear();
-                adapter = new CustomLvArticleAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arrDocBao);
-                lvArticle.setAdapter(adapter);
-
-                Cursor dataContacts = databaseHandlerLuuTin.GetData("SELECT * FROM contacts");
-                while (dataContacts.moveToNext()) {    //khi con` du lieu
-                    int id = dataContacts.getInt(0);
-
-                    String img = dataContacts.getString(1);
-                    String title = dataContacts.getString(2); //cot 1
-                    String link = dataContacts.getString(3);
-                    String date = dataContacts.getString(4);
-                    arrDocBao.add(0, new ArticleObject(id, title, link, img, date));
-                    adapter.notifyDataSetChanged();
-                }
-            } else if (idWebSite != 5) {
-                new ReadDataFromURL().execute(linkWeb);
-            }
+                getSavedArticleFromDatabase();
+            } else{ new ReadDataFromURL().execute(linkWeb);}
         } else {
-
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
-            alertDialog.setTitle("Không có kết nối internet");
-            alertDialog.setMessage("Bạn có muốn xem lại những tin đã đọc gần đây !");
-            alertDialog.setIcon(R.drawable.errorw);
-            alertDialog.setPositiveButton("Có", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    Intent intent = new Intent(MainActivity.this, ArticleWasReadActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putParcelableArrayList("arr", arrTinDaDoc);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                }
-            });
-            alertDialog.setNeutralButton("Không", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    finish();
-                    System.exit(0);
-                }
-            });
-
-            alertDialog.show();
-
-
+            showDialogWhenNoNetwork();
         }
 
         
-        
-        // select data
-        Cursor dataContacts = databaseHandler.GetData("SELECT * FROM contacts");
-        while (dataContacts.moveToNext()) {    //khi con` du lieu
-            int id = dataContacts.getInt(0);
-            String title = dataContacts.getString(1); //cot 1
-            String link = dataContacts.getString(2);
-            ArticleWasReadObject tinDaDoc = new ArticleWasReadObject(id, title, link);
-            arrTinDaDoc.add(tinDaDoc);
-        }
-        if (arrTinDaDoc.size() >= 11) {
-            for (int i = 0; i <= arrTinDaDoc.size() - 11; i++) {
-                databaseHandler.QueryData("DELETE FROM contacts WHERE id='" + arrTinDaDoc.get(i).id + "'");
-                arrTinDaDoc.remove(i);
-            }
-        }
-
-        //event listview
-        lvArticle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override        //load qua activity 2 khi kick vao item listview
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //insert data       chu y chu insert
-                if (isLongClick == false) {
-                    databaseHandler.QueryData("INSERT INTO contacts VALUES(null,'" + arrDocBao.get(i).title + "','" + arrDocBao.get(i).link + "')");
-                    Intent intent = new Intent(MainActivity.this, DetailsArticleActivity.class);
-                    intent.putExtra("link", arrDocBao.get(i).link);
-                    intent.putExtra("image", arrDocBao.get(i).image);
-                    intent.putExtra("title", arrDocBao.get(i).title);
-                    intent.putExtra("date", arrDocBao.get(i).date);
-                    startActivity(intent);
-                }
-            }
-
-        });
-        //long click lv
-
-        lvArticle.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                if (idWebSite == 5) {
-                    isLongClick = true;
-                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
-                    alertDialog.setTitle("     Xác Nhận...");
-                    alertDialog.setMessage("Bạn có thực sự muốn xóa tin này!");
-                    alertDialog.setIcon(R.drawable.war);
-                    alertDialog.setCancelable(false);
-                    alertDialog.setPositiveButton("Có", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i2) {
-                            databaseHandlerLuuTin.QueryData("DELETE FROM contacts WHERE id='" + arrDocBao.get(i).id + "'");
-                            arrDocBao.remove(i);
-                            adapter.notifyDataSetChanged();
-                            isLongClick = false;
-                            dialogInterface.dismiss();
-                        }
-                    });
-                    alertDialog.setNeutralButton("Không", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            isLongClick = false;
-                            dialogInterface.dismiss();
-                        }
-                    });
-
-                    alertDialog.show();
-
-                }
-                return false;
-
-            }
-        });
 
 
-        //lv adapter
-        for (int i = 0; i < tenWeb.length; i++) {
-            menuWeb = new WebSiteObject(iconWeb[i], tenWeb[i]);
-            arrMenuWeb.add(menuWeb);
-        }
-
-        lv_menuWeb = (ListView) findViewById(R.id.lv_menuWeb);
-        final CustomLvWebsiteAdapter customAdapter_menuWeb = new CustomLvWebsiteAdapter(MainActivity.this, R.layout.custom__lv_website, arrMenuWeb);
-        lv_menuWeb.setAdapter(customAdapter_menuWeb);
 
 
-        drawerLayout = (DrawerLayout) findViewById(R.id.menuWeb);
+       // drawerLayout = (DrawerLayout) findViewById(R.id.menuWeb);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);  //hien cai button
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -230,62 +122,13 @@ public class MainActivity extends AppCompatActivity {
         MainActivity.this.setTitle(titleWeb);
 
 
-        lv_menuWeb.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                idWebSite = i;
 
 
-                Log.e("xx", "clickmenuwweb");
-                if (i == 1) {
-                    linkWeb = "https://vnexpress.net/rss/tin-moi-nhat.rss";
-                    titleWeb = "VnExpress.net";
-                } else if (i == 0) {
-                    linkWeb = "http://vietnamnet.vn/rss/home.rss";
-                    titleWeb = "VietNamNet.vn";
+        // event click listview
+        listviewArticleClick();
 
-                } else if (i == 2) {
-                    linkWeb = "http://dantri.com.vn/trangchu.rss";
-                    titleWeb = "DânTrí.com.vn";
-                } else if (i == 3) {
-                    linkWeb = "http://www.24h.com.vn/upload/rss/tintuctrongngay.rss";
-                    titleWeb = "24h.com.vn";
+        listviewWebsiteClick();
 
-                } else if (i == 4) {
-                    linkWeb = "http://danviet.vn/rss/tin-tuc-1001.rss";
-                    titleWeb = "DânViệt.vn";
-
-                } else if (i == 5) {
-                    try {
-                        arrDocBao.clear();
-                        Cursor dataContacts = databaseHandlerLuuTin.GetData("SELECT * FROM contacts");
-                        while (dataContacts.moveToNext()) {//khi con` du lieu
-                            int id = dataContacts.getInt(0);
-                            String img = dataContacts.getString(1);
-                            String title = dataContacts.getString(2); //cot 1
-                            String link = dataContacts.getString(3);
-                            String date = dataContacts.getString(4);
-                            arrDocBao.add(0, new ArticleObject(id, title, link, img, date));
-                        }
-                        adapter.notifyDataSetChanged();
-                    } catch (Exception e) {
-                    }
-                    Log.e("xx", "size=" + arrDocBao.size());
-                    titleWeb = "Tin Đã Lưu";
-
-                }
-                //cap nhap lai menu chon loai bao cua trang web
-                if (idWebSite != 5) {
-                    arrDocBao.clear();
-                    new ReadDataFromURL().execute(linkWeb);
-                    Log.e("xx", "sss" + i);
-                }
-                Log.e("xx", "" + i);
-                invalidateOptionsMenu();
-                MainActivity.this.setTitle(titleWeb);
-                drawerLayout.closeDrawers();  //dong cai tab chon web bao'
-            }
-        });
 
 
     }
@@ -323,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // event click  menu bên phải
+    // event click  menu  bên phải || click drawerlayout
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         isLoading = false;
@@ -331,11 +174,13 @@ public class MainActivity extends AppCompatActivity {
 
         String link = selectItemRightMenu(item);
 
-        arrDocBao.clear();
-        new ReadDataFromURL().execute(link);
-        isLoading = true;
-        Log.e("xx", "clickmenu ben phai==" + link);
-
+        // nếu có click vào cái listview
+        if(link.equals("abc")==false) {
+            arrArticle.clear();
+            new ReadDataFromURL().execute(link);
+            isLoading = true;
+            Log.e("xx", "click menu ben phải ==" + link);
+        }
         return actionBarDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
 
     }
@@ -357,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... strings) {
             //  ArrayList<NewsModel> arr=new ArrayList<NewsModel>();
             String url = strings[0];
+         //   arrArticle.clear();
             try {
                 org.jsoup.nodes.Document doc = Jsoup.connect(url).get();
                 Elements elements = doc.select("item");
@@ -398,8 +244,8 @@ public class MainActivity extends AppCompatActivity {
                         date = date.substring(0, date.length() - 10);
 
 
-                    arrDocBao.add(new ArticleObject(title3, link, image, date));
-                    Log.d("arr", "" + arrDocBao.size());
+                    arrArticle.add(new ArticleObject(title3, link, image, date));
+                    Log.d("arr", "" + arrArticle.size());
 
                 }
             } catch (Exception e) {
@@ -412,15 +258,15 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
 
-            adapter = new CustomLvArticleAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arrDocBao);
-            lvArticle.setAdapter(adapter);
+//            adapter = new CustomLvArticleAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arrArticle);
+//            lvArticle.setAdapter(adapter);
             adapter.notifyDataSetChanged();
             if (isLoading == true) {
                 dialog.dismiss();
             }
             super.onPostExecute(s);
 
-            Log.d("arr", "...." + arrDocBao.size());
+            Log.d("arr", "...." + arrArticle.size());
         }
     }
 
@@ -853,4 +699,175 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    private  void listviewArticleClick(){
+
+        final boolean[] isLongClick = {false};
+
+        lvArticle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override        //load qua activity 2 khi kick vao item listview
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //insert data       chu y chu insert
+                if (isLongClick[0] == false) {
+                    databaseArticleWasRead.QueryData("INSERT INTO contacts VALUES(null,'" + arrArticle.get(i).title + "','" + arrArticle.get(i).link + "')");
+                    Intent intent = new Intent(MainActivity.this, DetailsArticleActivity.class);
+                    intent.putExtra("link", arrArticle.get(i).link);
+                    intent.putExtra("image", arrArticle.get(i).image);
+                    intent.putExtra("title", arrArticle.get(i).title);
+                    intent.putExtra("date", arrArticle.get(i).date);
+                    startActivity(intent);
+                }
+            }
+
+        });
+        //long click lv
+
+        lvArticle.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
+                if (idWebSite == 5) {
+                    isLongClick[0] = true;
+                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+                    alertDialog.setTitle("     Xác Nhận...");
+                    alertDialog.setMessage("Bạn có thực sự muốn xóa tin này!");
+                    alertDialog.setIcon(R.drawable.war);
+                    alertDialog.setCancelable(false);
+                    alertDialog.setPositiveButton("Có", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i2) {
+                            databaseSavedArticle.QueryData("DELETE FROM contacts WHERE id='" + arrArticle.get(i).id + "'");
+                            arrArticle.remove(i);
+                            adapter.notifyDataSetChanged();
+                            isLongClick[0] = false;
+                            dialogInterface.dismiss();
+                        }
+                    });
+                    alertDialog.setNeutralButton("Không", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            isLongClick[0] = false;
+                            dialogInterface.dismiss();
+                        }
+                    });
+
+                    alertDialog.show();
+
+                }
+                return false;
+
+            }
+        });
+    }
+
+    private void getSavedArticleFromDatabase(){
+        arrArticle.clear();
+        Cursor dataContacts = databaseSavedArticle.GetData("SELECT * FROM contacts");
+        while (dataContacts.moveToNext()) {    //khi con` du lieu
+            int id = dataContacts.getInt(0);
+
+            String img = dataContacts.getString(1);
+            String title = dataContacts.getString(2); //cot 1
+            String link = dataContacts.getString(3);
+            String date = dataContacts.getString(4);
+            arrArticle.add(0, new ArticleObject(id, title, link, img, date));
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+
+    private  void showDialogWhenNoNetwork(){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        alertDialog.setTitle("Không có kết nối internet");
+        alertDialog.setMessage("Bạn có muốn xem lại những tin đã đọc gần đây !");
+        alertDialog.setIcon(R.drawable.errorw);
+        alertDialog.setCancelable(false);
+        alertDialog.setPositiveButton("Có", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(MainActivity.this, ReadArticleActivity.class);
+                startActivity(intent);
+            }
+        });
+        alertDialog.setNeutralButton("Không", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+                System.exit(0);
+            }
+        });
+
+        alertDialog.show();
+    }
+
+    private  void listviewWebsiteClick(){
+        lvWebsite.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                idWebSite = i;
+
+                Log.e("xx", "clickmenuwweb");
+                if (i == 1) {
+                    linkWeb = "https://vnexpress.net/rss/tin-moi-nhat.rss";
+                    titleWeb = "VnExpress.net";
+                } else if (i == 0) {
+                    linkWeb = "http://vietnamnet.vn/rss/home.rss";
+                    titleWeb = "VietNamNet.vn";
+
+                } else if (i == 2) {
+                    linkWeb = "http://dantri.com.vn/trangchu.rss";
+                    titleWeb = "DânTrí.com.vn";
+                } else if (i == 3) {
+                    linkWeb = "http://www.24h.com.vn/upload/rss/tintuctrongngay.rss";
+                    titleWeb = "24h.com.vn";
+
+                } else if (i == 4) {
+                    linkWeb = "http://danviet.vn/rss/tin-tuc-1001.rss";
+                    titleWeb = "DânViệt.vn";
+
+                } else if (i == 5) {
+                    getSavedArticleFromDatabase();
+                    Log.e("xx", "size=" + arrArticle.size());
+                    titleWeb = "Tin Đã Lưu";
+
+                }
+                //cap nhap lai menu chon loai bao cua trang web
+                if (idWebSite != 5) {
+                    arrArticle.clear();
+                    new ReadDataFromURL().execute(linkWeb);
+                    Log.e("xx", "sss" + i);
+                }
+                Log.e("xx", "" + i);
+                invalidateOptionsMenu();
+                MainActivity.this.setTitle(titleWeb);
+                drawerLayout.closeDrawers();  //dong cai tab chon web bao'
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e("abc"," destroy");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e("abc"," resum");
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.e("abc"," restart");
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e("abc"," stop");
+
+    }
 }

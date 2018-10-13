@@ -1,4 +1,4 @@
-package com.example.nguyenhuy.docbao;
+package com.example.nguyenhuy.docbao.MainActivity;
 
 /**
  * Created by nguyenhuy on 10/11/2017.

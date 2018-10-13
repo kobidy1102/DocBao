@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/newspaper"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,9 +22,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DetailsArticleActivity"
-            android:label="Nội Dung Chi Tiết"
-            android:parentActivityName=".MainActivity" />
+            android:name=".DetailsArticleActivity.DetailsArticleActivity"
+            android:label="Nội Dung Chi Tiết" />
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
@@ -40,12 +39,12 @@
             android:exported="true" />
 
         <activity
-            android:name=".ArticleWasReadActivity"
+            android:name=".ReadArticleActivity.ReadArticleActivity"
             android:label="        Các tin đã đọc gần đây" />
         <activity
-            android:name=".DetailsArticleOfflineActivity"
+            android:name=".DetailsArticleActivity.DetailsArticleOfflineActivity"
             android:label="Nội Dung Chi Tiết"
-            android:parentActivityName=".ArticleWasReadActivity" />
+            android:parentActivityName=".ReadArticleActivity.ReadArticleActivity" />
     </application>
 
 </manifest>

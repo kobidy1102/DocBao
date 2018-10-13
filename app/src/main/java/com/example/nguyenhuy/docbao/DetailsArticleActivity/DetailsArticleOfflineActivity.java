@@ -1,4 +1,4 @@
-package com.example.nguyenhuy.docbao;
+package com.example.nguyenhuy.docbao.DetailsArticleActivity;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -7,12 +7,14 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.example.nguyenhuy.docbao.R;
+
 public class DetailsArticleOfflineActivity extends AppCompatActivity {
     WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details_article_was_read);
+        setContentView(R.layout.activity_details_read_article);
         webView=(WebView) findViewById(R.id.wv_docOffline);
 
         webView.getSettings().setJavaScriptEnabled( true );

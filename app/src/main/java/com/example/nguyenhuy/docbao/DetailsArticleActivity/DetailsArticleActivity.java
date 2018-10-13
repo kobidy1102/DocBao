@@ -1,22 +1,35 @@
-package com.example.nguyenhuy.docbao;
+package com.example.nguyenhuy.docbao.DetailsArticleActivity;
 
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.webkit.ClientCertRequest;
+import android.webkit.RenderProcessGoneDetail;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.nguyenhuy.docbao.MainActivity.MainActivity;
+import com.example.nguyenhuy.docbao.R;
 import com.facebook.FacebookSdk;
 import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
@@ -26,30 +39,28 @@ import java.security.NoSuchAlgorithmException;
 
 public class DetailsArticleActivity extends AppCompatActivity {
     WebView webView;
-  //  ProgressDialog dialog;
-    Button btn_share;
     ShareDialog shareDialog;
     ShareLinkContent shareLinkContent;
     String duongLink;
     String image, date,title;
+    ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+       // getWindow().requestFeature(Window.FEATURE_PROGRESS);
         FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_details_article);
         webView=(WebView) findViewById(R.id.wv);
-       // btn_share= (Button) findViewById(R.id.btn_share);
         shareDialog= new ShareDialog(DetailsArticleActivity.this);
-//        dialog = new ProgressDialog(DetailsArticleActivity.this);
-//        dialog.setMessage("      Loading...");
-//        dialog.setCancelable(false);
-//        dialog.show();
+
+
 
         Intent intent=getIntent();
         duongLink=intent.getStringExtra("link");
         image=intent.getStringExtra("image");
         date=intent.getStringExtra("date");
         title=intent.getStringExtra("title");
+
         webView.getSettings().setAllowFileAccess( true );
        // webView.getSettings().setAppCacheMaxSize(1024 * 1024 * 30);
         webView.getSettings().setAppCacheMaxSize(Long.MAX_VALUE);
@@ -62,21 +73,34 @@ public class DetailsArticleActivity extends AppCompatActivity {
         //webView.getSettings().setTextZoom(50);
         webView.getSettings().setCacheMode( WebSettings.LOAD_DEFAULT ); // load online by default
 
-     //   if ( !isNetworkAvailable() ) { // loading offline
-     //       webView.getSettings().setCacheMode( WebSettings.LOAD_CACHE_ELSE_NETWORK );
-     //   }
 
-        webView.loadUrl(duongLink);
-        webView.setWebViewClient(new WebViewClient(){
+        progressBar= (ProgressBar) findViewById(R.id.progress_bar);
+        progressBar.setMax(100);
+
+
+        webView.setWebViewClient(new HelpClient());
+
+        webView.setWebChromeClient(new WebChromeClient(){
             @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-            //    dialog.dismiss();
+            public void onProgressChanged(WebView view, int newProgress) {
 
+                progressBar.setProgress(newProgress);
+                if(newProgress==100){
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                super.onProgressChanged(view, newProgress);
             }
+
+
         });
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        webView.loadUrl(duongLink);
+
+
+
+        // API share  của Facebook
         try {
             PackageInfo info = getPackageManager().getPackageInfo(
                     "com.example.nguyenhuy.docbao",
@@ -93,6 +117,7 @@ public class DetailsArticleActivity extends AppCompatActivity {
         }
 
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);  //hien cai button
 
 
 
@@ -116,11 +141,34 @@ public class DetailsArticleActivity extends AppCompatActivity {
             }
             shareDialog.show(shareLinkContent);
         }else if(item.getItemId()==R.id.mn_save){
-            MainActivity.databaseHandlerLuuTin.QueryData("INSERT INTO contacts VALUES(null,'" +image+ "','"+title+"','"+duongLink+"','"+date+"')");
+            MainActivity.databaseSavedArticle.QueryData("INSERT INTO contacts VALUES(null,'" +image+ "','"+title+"','"+duongLink+"','"+date+"')");
             Toast.makeText(DetailsArticleActivity.this,"Đã Lưu",Toast.LENGTH_SHORT).show();
+        }else if( item.getItemId()== android.R.id.home){
+            finish();
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+
+
+    class  HelpClient extends WebViewClient{
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
+            view.loadUrl(url);
+            return true;
+        }
+
+    }
+
+
+
+
+
+
+
 }
 
 

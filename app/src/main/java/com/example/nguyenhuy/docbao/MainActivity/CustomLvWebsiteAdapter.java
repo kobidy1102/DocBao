@@ -1,4 +1,4 @@
-package com.example.nguyenhuy.docbao;
+package com.example.nguyenhuy.docbao.MainActivity;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.nguyenhuy.docbao.R;
+import com.example.nguyenhuy.docbao.MainActivity.WebSiteObject;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

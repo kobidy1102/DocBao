@@ -1,4 +1,4 @@
-package com.example.nguyenhuy.docbao;
+package com.example.nguyenhuy.docbao.ReadArticleActivity;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,14 +8,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.nguyenhuy.docbao.R;
+
 import java.util.List;
 
 /**
  * Created by nguyenhuy on 17/11/2017.
  */
 
-public class CustomLvArticleWasReadAdapter extends ArrayAdapter<ArticleWasReadObject> {
-    public CustomLvArticleWasReadAdapter(Context context, int resourse, List<ArticleWasReadObject> items) {
+public class CustomLvReadArticleAdapter extends ArrayAdapter<ReadArticleObject> {
+    public CustomLvReadArticleAdapter(Context context, int resourse, List<ReadArticleObject> items) {
         super(context, resourse, items);
 
     }
@@ -25,11 +27,11 @@ public class CustomLvArticleWasReadAdapter extends ArrayAdapter<ArticleWasReadOb
         if (v == null) {
             LayoutInflater vi;
             vi=LayoutInflater.from(getContext());
-            v= vi.inflate(R.layout.custom__lv_article_was_read,null);
+            v= vi.inflate(R.layout.custom__lv_read_article,null);
         }
 
         // Get item
-        ArticleWasReadObject articleWasRead = getItem(position);
+        ReadArticleObject articleWasRead = getItem(position);
         if (articleWasRead!=null){
             TextView title = (TextView) v.findViewById(R.id.text);
             title.setText(articleWasRead.title);
