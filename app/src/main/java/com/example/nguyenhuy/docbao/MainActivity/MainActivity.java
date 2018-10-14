@@ -35,11 +35,12 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     ListView lvArticle;
     CustomLvArticleAdapter adapter;
-    ArrayList<ArticleObject> arrArticle;
+    ArrayList<ArticleObject> arrArticle=new ArrayList<ArticleObject>();;
+    ArrayList<ArticleObject> arrArticle2= new ArrayList<ArticleObject>();
+
 
     static String linkWeb = "http://vietnamnet.vn/rss/home.rss";
     static String titleWeb = "VietNamNet.vn";
-    boolean isLoading = true;
     static int idWebSite = 0;
     MenuItem itemMenu_type_article;
     public static DatabaseHandler databaseArticleWasRead;
@@ -63,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
         lvArticle = (ListView) findViewById(R.id.lv);
         drawerLayout = (DrawerLayout) findViewById(R.id.menuWeb);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close);
-        arrArticle = new ArrayList<ArticleObject>();
         itemMenu_type_article = (MenuItem) findViewById(R.id.mn_);
 
         adapter = new CustomLvArticleAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arrArticle);
@@ -86,21 +86,12 @@ public class MainActivity extends AppCompatActivity {
 
         // kiểm tra mạng
         if (isNetworkAvailable() == true) {
-            // Tin đã lưu
-            if (idWebSite == 5) {
-                getSavedArticleFromDatabase();
-            } else{ new ReadDataFromURL().execute(linkWeb);}
+            new ReadDataFromURL().execute(linkWeb);
         } else {
             showDialogWhenNoNetwork();
         }
 
-        
-
-
-
-
-       // drawerLayout = (DrawerLayout) findViewById(R.id.menuWeb);
-
+         // setting cái button show menu web
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);  //hien cai button
         getSupportActionBar().setHomeButtonEnabled(true);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
@@ -108,20 +99,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                // checkOpenOrClose=true;
                 Log.e("xx", "click ben trai");
             }
 
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
-                //  checkOpenOrClose=false;
             }
         };
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         MainActivity.this.setTitle(titleWeb);
-
-
 
 
         // event click listview
@@ -129,28 +116,21 @@ public class MainActivity extends AppCompatActivity {
 
         listviewWebsiteClick();
 
-
-
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         actionBarDrawerToggle.syncState();
-        // isLoading=false;
-
-
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggls
         actionBarDrawerToggle.onConfigurationChanged(newConfig);
-
     }
 
-    // click trang bao nao thi menu trang bao do hien
+    // click trang báo nào thì menu(loại báo)  trang báo đó hiện
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_loaibao, menu);
@@ -169,16 +149,12 @@ public class MainActivity extends AppCompatActivity {
     // event click  menu  bên phải || click drawerlayout
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        isLoading = false;
         //click item menu_TypeBao
-
         String link = selectItemRightMenu(item);
 
-        // nếu có click vào cái listview
+        // nếu có click vào cái listview website
         if(link.equals("abc")==false) {
-            arrArticle.clear();
             new ReadDataFromURL().execute(link);
-            isLoading = true;
             Log.e("xx", "click menu ben phải ==" + link);
         }
         return actionBarDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
@@ -191,11 +167,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
+
+                arrArticle.clear();
+                adapter.notifyDataSetChanged();
+
+                arrArticle2.clear();
+
             dialog = new ProgressDialog(MainActivity.this);
             dialog.setMessage("      Loading...");
-            if (isLoading == true) {
-                dialog.show();
-            }
+            dialog.show();
         }
 
         @Override
@@ -244,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                         date = date.substring(0, date.length() - 10);
 
 
-                    arrArticle.add(new ArticleObject(title3, link, image, date));
+                    arrArticle2.add(new ArticleObject(title3, link, image, date));
                     Log.d("arr", "" + arrArticle.size());
 
                 }
@@ -260,10 +240,10 @@ public class MainActivity extends AppCompatActivity {
 
 //            adapter = new CustomLvArticleAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arrArticle);
 //            lvArticle.setAdapter(adapter);
+            arrArticle.addAll(arrArticle2);
             adapter.notifyDataSetChanged();
-            if (isLoading == true) {
+
                 dialog.dismiss();
-            }
             super.onPostExecute(s);
 
             Log.d("arr", "...." + arrArticle.size());
@@ -287,357 +267,271 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.mn_trangChu:
                 link = "http://vietnamnet.vn/rss/home.rss";
-                isLoading = true;
                 break;
             case R.id.mn_phapLuat:
                 link = "http://vietnamnet.vn/rss/phap-luat.rss";
-                isLoading = true;
                 break;
             case R.id.mn_congNghe:
                 link = "http://vietnamnet.vn/rss/cong-nghe.rss";
-                isLoading = true;
                 break;
             case R.id.mn_kinhDoanh:
                 link = "http://vietnamnet.vn/rss/kinh-doanh.rss";
-                isLoading = true;
                 break;
             case R.id.mn_giaoDuc:
                 link = "http://vietnamnet.vn/rss/giao-duc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_thoiSu:
                 link = "http://vietnamnet.vn/rss/thoi-su.rss";
-                isLoading = true;
                 break;
             case R.id.mn_giaiTri:
                 link = "http://vietnamnet.vn/rss/giai-tri.rss";
-                isLoading = true;
                 break;
             case R.id.mn_sucKhoe:
                 link = "http://vietnamnet.vn/rss/suc-khoe.rss";
-                isLoading = true;
                 break;
             case R.id.mn_theThao:
                 link = "http://vietnamnet.vn/rss/the-thao.rss";
-                isLoading = true;
                 break;
             case R.id.mn_doiSong:
                 link = "http://vietnamnet.vn/rss/doi-song.rss";
-                isLoading = true;
                 break;
             case R.id.mn_theGioi:
                 link = "http://vietnamnet.vn/rss/the-gioi.rss";
-                isLoading = true;
                 break;
             case R.id.mn_batDongSan:
                 link = "http://vietnamnet.vn/rss/bat-dong-san.rss";
-                isLoading = true;
                 break;
             case R.id.mn_banDoc:
                 link = "http://vietnamnet.vn/rss/ban-doc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_tinMoiNong:
                 link = "http://vietnamnet.vn/rss/tin-moi-nong.rss";
-                isLoading = true;
                 break;
             case R.id.mn_tinNoiBat:
                 link = "http://vietnamnet.vn/rss/tin-noi-bat.rss";
-                isLoading = true;
                 break;
             case R.id.mn_tuanVietNam:
                 link = "http://vietnamnet.vn/rss/tuanvietnam.rss";
-                isLoading = true;
                 break;
             case R.id.mn_gocNhinThang:
                 link = "http://vietnamnet.vn/rss/goc-nhin-thang.rss";
-                isLoading = true;
                 break;
 
             //vnexpress
             case R.id.mn_ex_trangChu:
                 link = "https://vnexpress.net/rss/tin-moi-nhat.rss";  // trang chu dang bi loi
-                isLoading = true;
                 break;
             case R.id.mn_ex_thoiSu:
                 link = "https://vnexpress.net/rss/thoi-su.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_theGioi:
                 link = "https://vnexpress.net/rss/the-gioi.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_kinhDoanh:
                 link = "https://vnexpress.net/rss/kinh-doanh.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_startup:
                 link = "https://vnexpress.net/rss/startup.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_giaiTri:
                 link = "https://vnexpress.net/rss/giai-tri.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_theThao:
                 link = "https://vnexpress.net/rss/the-thao.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_phapLuat:
                 link = "https://vnexpress.net/rss/phap-luat.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_giaoDuc:
                 link = "https://vnexpress.net/rss/giao-duc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_sucKhoe:
                 link = "https://vnexpress.net/rss/suc-khoe.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_giaDinh:                /////////////
                 link = "https://vnexpress.net/rss/gia-dinh.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_duLich:                  ////////////
                 link = "https://vnexpress.net/rss/du-lich.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_khoaHoc:
                 link = "https://vnexpress.net/rss/khoa-hoc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_soHoa:
                 link = "https://vnexpress.net/rss/so-hoa.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_xe:
                 link = "https://vnexpress.net/rss/oto-xe-may.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_congDong:
                 link = "https://vnexpress.net/rss/cong-dong.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_tamsu:
                 link = "https://vnexpress.net/rss/tam-su.rss";
-                isLoading = true;
                 break;
             case R.id.mn_ex_cuoi:
                 link = "https://vnexpress.net/rss/cuoi.rss";
-                isLoading = true;
                 break;
 
             //dantri
             case R.id.mn_dt_tc:
                 link = "http://dantri.com.vn/trangchu.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_sk:
                 link = "http://dantri.com.vn/suc-khoe.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_xh:
                 link = "http://dantri.com.vn/xa-hoi.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_gt:
                 link = "http://dantri.com.vn/giai-tri.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_gdkh:
                 link = "http://dantri.com.vn/giao-duc-khuyen-hoc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_tt:
                 link = "http://dantri.com.vn/the-thao.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_tg:
                 link = "http://dantri.com.vn/the-gioi.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_kd:
                 link = "http://dantri.com.vn/kinh-doanh.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_otoxm:
                 link = "http://dantri.com.vn/o-to-xe-may.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_sms:
                 link = "http://dantri.com.vn/suc-manh-so.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_tygt:
                 link = "http://dantri.com.vn/tinh-yeu-gioi-tinh.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_cl:
                 link = "http://dantri.com.vn/chuyen-la.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_vl:
                 link = "http://dantri.com.vn/viec-lam.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_nst:
                 link = "http://dantri.com.vn/nhip-song-tre.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_pl:
                 link = "http://dantri.com.vn/phap-luat.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_bd:
                 link = "http://dantri.com.vn/ban-doc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_vh:
                 link = "http://dantri.com.vn/van-hoa.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_dh:
                 link = "http://dantri.com.vn/du-hoc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_dl:
                 link = "http://dantri.com.vn/du-lich.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_ds:
                 link = "http://dantri.com.vn/doi-song.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dt_khcn:
                 link = "http://dantri.com.vn/khoa-hoc-cong-nghe.rss";
-                isLoading = true;
                 break;
 
             //24h
             case R.id.mn_24h_tc:
                 link = "http://www.24h.com.vn/upload/rss/tintuctrongngay.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_bd:
                 link = "http://www.24h.com.vn/upload/rss/bongda.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_anhs:
                 link = "http://www.24h.com.vn/upload/rss/anninhhinhsu.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_tt:
                 link = "http://www.24h.com.vn/upload/rss/thoitrang.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_tcbds:
                 link = "http://www.24h.com.vn/upload/rss/taichinhbatdongsan.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_at:
                 link = "http://www.24h.com.vn/upload/rss/amthuc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_ld:
                 link = "http://www.24h.com.vn/upload/rss/lamdep.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_phim:
                 link = "http://www.24h.com.vn/upload/rss/phim.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_gddh:
                 link = "http://www.24h.com.vn/upload/rss/giaoducduhoc.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_btcs:
                 link = "http://www.24h.com.vn/upload/rss/bantrecuocsong.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_tt2:
                 link = "http://www.24h.com.vn/upload/rss/thethao.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_cntt:
                 link = "http://www.24h.com.vn/upload/rss/congnghethongtin.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_otoxm:
                 link = "http://www.24h.com.vn/upload/rss/otoxemay.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_dl:
                 link = "http://www.24h.com.vn/upload/rss/dulich.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_skds:
                 link = "http://www.24h.com.vn/upload/rss/suckhoedoisong.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_cuoi24h:
                 link = "http://www.24h.com.vn/upload/rss/cuoi24h.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_tg:
                 link = "http://www.24h.com.vn/upload/rss/tintucquocte.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_dss:
                 link = "http://www.24h.com.vn/upload/rss/doisongshowbiz.rss";
-                isLoading = true;
                 break;
             case R.id.mn_24h_gt:
                 link = "http://www.24h.com.vn/upload/rss/giaitri.rss";
-                isLoading = true;
                 break;
 
 
             // danviet
             case R.id.mn_dv_trangChu:
                 link = "http://danviet.vn/rss/tin-tuc-1001.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_theGioi:
                 link = "http://danviet.vn/rss/the-gioi-1007.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_theThao:
                 link = "http://danviet.vn/rss/the-thao-1035.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_phapLuat:
                 link = "http://danviet.vn/rss/phap-luat-1008.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_kinhTe:
                 link = "http://danviet.vn/rss/kinh-te-1004.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_nhaNong:
                 link = "http://danviet.vn/rss/nha-nong-1009.rss";
-                isLoading = true;
                 break;
 
             case R.id.mn_dv_giaDinh:
                 link = "http://danviet.vn/rss/gia-dinh-1023.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_congNghe:
                 link = "http://danviet.vn/rss/cong-nghe-1030.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_otoxm:
                 link = "http://danviet.vn/rss/o-to-xe-may-1034.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_banDoc:
                 link = "http://danviet.vn/rss/ban-doc-1043.rss";
-                isLoading = true;
                 break;
             case R.id.mn_dv_duLich:
                 link = "http://danviet.vn/rss/du-lich-1097.rss";
-                isLoading = true;
                 break;
             default:
                 break;
@@ -682,7 +576,6 @@ public class MainActivity extends AppCompatActivity {
             menu.getItem(4).setVisible(false);
 
         } else if (idWebSite == 4) {
-            Toast.makeText(MainActivity.this, "tên bác", Toast.LENGTH_SHORT).show();
             menu.getItem(0).setVisible(false);
             menu.getItem(1).setVisible(false);
             menu.getItem(2).setVisible(false);
@@ -832,7 +725,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 //cap nhap lai menu chon loai bao cua trang web
                 if (idWebSite != 5) {
-                    arrArticle.clear();
+//                    arrArticle.clear();
                     new ReadDataFromURL().execute(linkWeb);
                     Log.e("xx", "sss" + i);
                 }
@@ -844,30 +737,4 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.e("abc"," destroy");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e("abc"," resum");
-
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.e("abc"," restart");
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.e("abc"," stop");
-
-    }
 }

@@ -28,7 +28,7 @@
         android:layout_gravity="top"
         android:layout_marginTop="-3dp"
         android:progress="0"
-        
+        android:progressDrawable="@drawable/custom_progress_bar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     </FrameLayout>
